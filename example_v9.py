@@ -165,6 +165,7 @@ class MCTSAgent(Agent):
             self.k += 1
             print(self.k)
             print("Sequence: {}, Reward: {}".format(node.game_state.sequence,reward))
+
             #print()
             # Propagate scores back up the tree.
             while node is not None:
@@ -188,7 +189,7 @@ class MCTSAgent(Agent):
         # Having performed as many MCTS rounds as we have time for, we
         # now pick a move.
         best_move = None
-        best_pct = -1.0    # I should change this
+        best_pct = -10000.0    # I should change this
         for child in root.children:
             child_pct = child.winning_frac()
             if child_pct > best_pct:
@@ -206,14 +207,14 @@ class MCTSAgent(Agent):
         total_rollouts = sum(child.num_rollouts for child in node.children)
         log_rollouts = math.log(total_rollouts)
 
-        best_score = -1
+        best_score = -10000
         best_child = None
         # Loop over each child.
         for child in node.children:
             # Calculate the UCT score.
             win_percentage = child.winning_frac()
             exploration_factor = math.sqrt(log_rollouts / child.num_rollouts)
-            uct_score = win_percentage + self.temperature * exploration_factor
+            uct_score = win_percentage - self.temperature * exploration_factor  # I changed the sign infornt of temp
             # Check if this is the largest we've seen so far.
             if uct_score > best_score:
                 best_score = uct_score
@@ -226,7 +227,7 @@ class MCTSAgent(Agent):
         new_schedule = deepcopy(schedule)
         while not new_schedule.is_over():
             new_schedule = new_schedule.allocate(random.randint(1, 3))
-        reward: float = 1 * new_schedule.evaluate()
+        reward: float = -1 * new_schedule.evaluate()
         return reward
 
 
@@ -241,10 +242,11 @@ if __name__ == "__main__":
     #
 #    while not schedule.is_over():
     move = bot.select_move(schedule)
+    print(move)
 #    schedule.allocate(move)
 
-    print(schedule)
-    print(costfunc(schedule.sequence))
+#    print(schedule)
+#    print(costfunc(schedule.sequence))
 
 
 
