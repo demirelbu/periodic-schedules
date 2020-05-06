@@ -3,6 +3,7 @@ import random
 import copy
 import enum
 import numpy as np
+from copy import deepcopy
 from collections import namedtuple
 from collections import defaultdict
 from typing import Dict, List, Iterable, Callable, NewType
@@ -52,14 +53,26 @@ variables['W3'] = np.matrix(
 # covariance of measurement noise
 variables['V3'] = np.matrix([[1.2732]])
 
+# tag::agent[]
+class Agent:
+    def __init__(self):
+        pass
+
+    def select_move(self, game_state):
+        raise NotImplementedError()
+# end::agent[]
+
+    def diagnostics(self):
+        return {}
+
 
 class Schedule:
-    def __init__(self, schedule: List[int], func: Callable[[
+    def __init__(self, sequence: List[int], func: Callable[[
                  List[int]], float], period: int, no_users: int) -> None:
         self.period: int = period
         self.no_users: int = no_users
         self.func: Callable[[List[int]], float] = func
-        self.schedule: List[int] = schedule
+        self.sequence: List[int] = sequence
 
     def legal_choices(self) -> List[int]:
         if self.is_over():
@@ -67,17 +80,18 @@ class Schedule:
         return [i for i in range(1, self.no_users + 1)]
 
     def allocate(self, user: int) -> object:
-        self.schedule.append(user)
-        return Schedule(self.schedule, self.func, self.period, self.no_users)
+        #if not self.is_over():
+        self.sequence.append(user)
+        return Schedule(self.sequence, self.func, self.period, self.no_users)
 
     def evaluate(self) -> float:
-        return self.func(self.schedule)
+        return self.func(self.sequence)
 
     def is_over(self) -> bool:  # is_completed
-        return len(self.schedule) >= self.period
+        return len(self.sequence) >= self.period
 
-    def __str__(self) -> str:
-        return f"The schedule is {self.schedule} that is {self.is_over()}."
+    def __str__(self) -> str:  # needed to be updated
+        return f"The schedule is {self.sequence} that is {self.is_over()}."
 
 
 # tag::mcts-node[]
@@ -89,7 +103,7 @@ class MCTSNode(object):
         self.win_counts: float = 0
         self.num_rollouts: int = 0
         self.children = []
-        print('bubu')
+        print('Visit MCTSNode')
         self.unvisited_moves: List[int] = game_state.legal_choices()
 # end::mcts-node[]
 
@@ -98,15 +112,15 @@ class MCTSNode(object):
         index: int = random.randint(0, len(self.unvisited_moves) - 1)
         new_move: List[int] = self.unvisited_moves.pop(index)
         new_game_state: Schedule = self.game_state.allocate(new_move)
-        new_node = MCTSNode(new_game_state, self, new_move)
+        new_node: MCTSNode = MCTSNode(new_game_state, self, new_move)
         self.children.append(new_node)
         return new_node
 # end::mcts-add-child[]
 
 # tag::mcts-record-win[]
-    def record_win(self, reward):
-        self.win_counts: float += reward
-        self.num_rollouts: int += 1
+    def record_win(self, reward: float):
+        self.win_counts += reward
+        self.num_rollouts += 1
 # end::mcts-record-win[]
 
 # tag::mcts-readers[]
@@ -121,38 +135,46 @@ class MCTSNode(object):
 # end::mcts-readers[]
 
 
-class MCTSAgent:  # (agent.Agent):
+class MCTSAgent(Agent):
     def __init__(self, num_rounds, temperature):
-        #        agent.Agent.__init__(self)
+        Agent.__init__(self)
         self.num_rounds = num_rounds
         self.temperature = temperature
+        self.k = 0
 
 # tag::mcts-signature[]
-    def select_move(self, game_state):
-        root = MCTSNode(game_state)
+    def select_move(self, game_state: Schedule):
+        print('Start!')
+        root: MCTSNode = MCTSNode(game_state)
+        print(root.game_state.sequence)
+        print('Stop!')
 # end::mcts-signature[]
 
 # tag::mcts-rounds[]
         for _ in range(self.num_rounds):
-            node = root
+            node: MCTSNode = root
             while (not node.can_add_child()) and (not node.is_terminal()):
                 node = self.select_child(node)
 
             # Add a new child node into the tree.
             if node.can_add_child():
-                node = node.add_random_child()
+                node: MCTSNode = node.add_random_child()
 
             # Simulate a random game from this node.
             reward = self.simulate_random_game(node.game_state)
-
+            self.k += 1
+            print(self.k)
+            print("Sequence: {}, Reward: {}".format(node.game_state.sequence,reward))
+            #print()
             # Propagate scores back up the tree.
             while node is not None:
                 node.record_win(reward)
                 node = node.parent
 # end::mcts-rounds[]
 
+
         scored_moves = [
-            (child.winning_frac(game_state.next_player),
+            (child.winning_frac(),
              child.move, child.num_rollouts)
             for child in root.children
         ]
@@ -160,13 +182,15 @@ class MCTSAgent:  # (agent.Agent):
         for s, m, n in scored_moves[:10]:
             print('%s - %.3f (%d)' % (m, s, n))
 
+#        print(node)
+
 # tag::mcts-selection[]
         # Having performed as many MCTS rounds as we have time for, we
         # now pick a move.
         best_move = None
-        best_pct = -1.0
+        best_pct = -1.0    # I should change this
         for child in root.children:
-            child_pct = child.winning_frac(game_state.next_player)
+            child_pct = child.winning_frac()
             if child_pct > best_pct:
                 best_pct = child_pct
                 best_move = child.move
@@ -187,7 +211,7 @@ class MCTSAgent:  # (agent.Agent):
         # Loop over each child.
         for child in node.children:
             # Calculate the UCT score.
-            win_percentage = child.winning_frac(node.game_state.next_player)
+            win_percentage = child.winning_frac()
             exploration_factor = math.sqrt(log_rollouts / child.num_rollouts)
             uct_score = win_percentage + self.temperature * exploration_factor
             # Check if this is the largest we've seen so far.
@@ -199,9 +223,10 @@ class MCTSAgent:  # (agent.Agent):
 
     @staticmethod
     def simulate_random_game(schedule: Schedule) -> float:
-        while not schedule.is_over():
-            schedule: Schedule = schedule.allocate(random.randint(1, 3))
-        reward: float = -1 * schedule.evaluate()
+        new_schedule = deepcopy(schedule)
+        while not new_schedule.is_over():
+            new_schedule = new_schedule.allocate(random.randint(1, 3))
+        reward: float = 1 * new_schedule.evaluate()
         return reward
 
 
@@ -209,10 +234,44 @@ if __name__ == "__main__":
     # construct the cost function
     costfunc = costfunction(variables)
     # create an instant for schedule
-    game_state = Schedule([], costfunc, 5, 3)
-    node = MCTSNode(game_state)
+    schedule = Schedule([], costfunc, 10, 3)
+    print(schedule)
+    # ...
+    bot = MCTSAgent(10, temperature=1.4)
+    #
+#    while not schedule.is_over():
+    move = bot.select_move(schedule)
+#    schedule.allocate(move)
+
+    print(schedule)
+    print(costfunc(schedule.sequence))
+
+
+
+
+#    bot = MCTSAgent(500, temperature=1.4)
+#    bot.select_move(schedule.game_state)
+
+
+#    while not game.is_over():
+    """
     reward = MCTSAgent.simulate_random_game(node.game_state)
     print(reward)
+    """
+
+
+"""
+    while not game.is_over():
+        print_board(game.board)
+        if game.next_player == gotypes.Player.black:
+            human_move = input('-- ')
+            point = point_from_coords(human_move.strip())
+            move = goboard.Move.play(point)
+        else:
+            move = bot.select_move(game)
+        print_move(game.next_player, move)
+        game = game.apply_move(move)
+"""
 
 
 """
