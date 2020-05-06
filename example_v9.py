@@ -198,10 +198,11 @@ class MCTSAgent:  # (agent.Agent):
 # end::mcts-uct[]
 
     @staticmethod
-    def simulate_random_game(schedule):
+    def simulate_random_game(schedule: Schedule) -> float:
         while not schedule.is_over():
-            schedule = schedule.allocate(random.randint(1, 3))
-        return -1 * schedule.evaluate()
+            schedule: Schedule = schedule.allocate(random.randint(1, 3))
+        reward: float = -1 * schedule.evaluate()
+        return reward
 
 
 if __name__ == "__main__":
