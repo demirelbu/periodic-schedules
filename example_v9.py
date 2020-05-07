@@ -160,13 +160,13 @@ class MCTSAgent(Agent):
 
             while (not node.can_add_child()) and (not node.is_terminal()):
                 node: MCTSNode = self.select_child(node)
-                print("State: {}, Reward: {:3.4f}".format(node.game_state.sequence, node.num_rollouts))
+                print("State: {}, Reward: {:3.2f}, Number of Times: {}".format(node.game_state.sequence, node.win_counts, node.num_rollouts))
 
             # Add a new child node into the tree.
             if node.can_add_child():
                 node: MCTSNode = node.add_random_child()
                 print("populate:")
-                print("State: {}, Reward: {:3.2f}".format(node.game_state.sequence, node.num_rollouts))
+                print("State: {}, Reward: {:3.2f}, Number of Times: {}".format(node.game_state.sequence, node.win_counts, node.num_rollouts))
 
             print("==============================")
 
@@ -194,7 +194,7 @@ class MCTSAgent(Agent):
         # Having performed as many MCTS rounds as we have time for, we
         # now pick a move.
         best_move = None
-        best_pct = -10000.0    # I should change this
+        best_pct = -100000.0    # I should change this
         for child in root.children:
             child_pct = child.winning_frac()
             if child_pct > best_pct:
@@ -212,7 +212,7 @@ class MCTSAgent(Agent):
         total_rollouts = sum(child.num_rollouts for child in node.children)
         log_rollouts = math.log(total_rollouts)
 
-        best_score = -10000
+        best_score = -100000.0
         best_child = None
         # Loop over each child.
         for child in node.children:
@@ -242,10 +242,14 @@ if __name__ == "__main__":
     # create an instant for schedule
     schedule = Schedule([], costfunc, 10, 3)
     # ...
-    bot = MCTSAgent(100, temperature=1.4)
+    bot = MCTSAgent(500, temperature=10.0)
     #
     move = bot.select_move(schedule)
-#    print(schedule.sequence)
+    print(schedule.sequence)
+    print(costfunc([2, 3, 1, 2, 2, 2, 1, 2, 1, 2]))
+    print(costfunc([3, 2, 1, 2, 2, 2, 1, 2, 2, 1]))
+
+# [1, 3, 2, 1, 2, 2, 1, 1, 1]
 
 """
     while not schedule.is_over():
