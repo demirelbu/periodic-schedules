@@ -65,7 +65,7 @@ class Agent:
     def diagnostics(self):
         return {}
 
-
+# tag::schedule[]
 class Schedule:
     def __init__(self, sequence: List[int], func: Callable[[
                  List[int]], float], period: int, no_users: int) -> None:
@@ -94,7 +94,7 @@ class Schedule:
 
     def __str__(self) -> str:  # needed to be updated
         return f"The schedule is {self.sequence} that is {self.is_over()}."
-
+# end::schedule[]
 
 # tag::mcts-node[]
 class MCTSNode(object):
@@ -145,34 +145,40 @@ class MCTSAgent(Agent):
 
 # tag::mcts-signature[]
     def select_move(self, game_state: Schedule):
-#        print('Start!')
+        print('Start!')
         root: MCTSNode = MCTSNode(game_state)
-#        print(root.game_state.sequence)
+        print(root.game_state.sequence)
 #        print('Stop!')
 # end::mcts-signature[]
 
 # tag::mcts-rounds[]
         for _ in range(self.num_rounds):
             node: MCTSNode = root
+            self.k += 1
+
+            print("============= {} =============".format(self.k))
 
             while (not node.can_add_child()) and (not node.is_terminal()):
-                node = self.select_child(node)
+                node: MCTSNode = self.select_child(node)
+                print("State: {}, Reward: {:3.4f}".format(node.game_state.sequence, node.num_rollouts))
 
             # Add a new child node into the tree.
             if node.can_add_child():
                 node: MCTSNode = node.add_random_child()
+                print("populate:")
+                print("State: {}, Reward: {:3.2f}".format(node.game_state.sequence, node.num_rollouts))
+
+            print("==============================")
 
             # Simulate a random game from this node.
-            reward = self.simulate_random_game(node.game_state)
-            self.k += 1
-#            print(self.k)
-#            print("Sequence: {}, Reward: {}".format(node.game_state.sequence,reward))
+            reward: float = self.simulate_random_game(node.game_state)
 
             # Propagate scores back up the tree.
             while node is not None:
                 node.record_win(reward)
                 node = node.parent
 # end::mcts-rounds[]
+
 
         scored_moves = [
             (child.winning_frac(),
@@ -234,37 +240,20 @@ if __name__ == "__main__":
     # construct the cost function
     costfunc = costfunction(variables)
     # create an instant for schedule
-    schedule = Schedule([], costfunc, 12, 3)
+    schedule = Schedule([], costfunc, 10, 3)
     # ...
-    bot = MCTSAgent(250, temperature=1.4)
+    bot = MCTSAgent(100, temperature=1.4)
     #
- #   move = bot.select_move(schedule)
- #   print(schedule.sequence)
+    move = bot.select_move(schedule)
+#    print(schedule.sequence)
 
+"""
     while not schedule.is_over():
-#    for _ in range(12):
         move = bot.select_move(schedule)
         schedule = schedule.allocate(move)
         print(schedule.sequence)
     print(costfunc(schedule.sequence))
-
-
-
-
-
 """
-    while not game.is_over():
-        print_board(game.board)
-        if game.next_player == gotypes.Player.black:
-            human_move = input('-- ')
-            point = point_from_coords(human_move.strip())
-            move = goboard.Move.play(point)
-        else:
-            move = bot.select_move(game)
-        print_move(game.next_player, move)
-        game = game.apply_move(move)
-"""
-
 
 """
 if __name__ == "__main__":
