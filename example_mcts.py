@@ -1,7 +1,8 @@
 import numpy as np
-from typing import Dict, List
+from typing import Dict
 from functions import costfunction
 from models import Schedule
+from mcts import MCTSAgent
 
 
 # create a python dictionary
@@ -48,13 +49,12 @@ variables['W3'] = np.matrix(
 variables['V3'] = np.matrix([[1.2732]])
 
 
-
-
-
-
-
-
-
-
 if __name__ == "__main__":
-    pass
+    # construct the cost function
+    costfunc = costfunction(variables)
+    # create an instant for schedule
+    schedule = Schedule([], costfunc, 7, 3)
+    # ...
+    bot = MCTSAgent(100, temperature=2.0)
+    #
+    move = bot.select_move(schedule)
