@@ -10,7 +10,7 @@ allocating a single communication channel to multiple feedback control systems.
 
 
 class costfunction:
-    def __init__(self, variables: Dict) -> None:
+    def __init__(self, variables: Dict, maxvalue: float = 5000.0) -> None:
         #
         self.no_plants: int = variables['no_plants']
         self.variables: Dict = variables
@@ -67,7 +67,7 @@ class costfunction:
             # find the length of the schedule
             period: float = len(time)
             if flag is False:
-                return 5000.0  # np.Inf  # Or a large number
+                return maxvalue  # np.Inf  # Or a large number
             largest_time: int = max(time)
             _variables: Dict = {}
             _variables['Z0'] = np.zeros(N.shape)
