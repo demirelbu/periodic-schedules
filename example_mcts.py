@@ -53,8 +53,18 @@ if __name__ == "__main__":
     # construct the cost function
     costfunc = costfunction(variables)
     # create an instant for schedule
-    schedule = Schedule([], costfunc, 7, 3)
+    schedule = Schedule([], costfunc, 13, 3)
     # ...
-    bot = MCTSAgent(100, temperature=2.0)
-    #
-    move = bot.select_move(schedule)
+    best_cost = -100000.0
+    best_schedule = None
+    for i in range(500):
+        bot = MCTSAgent(300, temperature=2.0)
+        #
+        cost, sequence = bot.select_move(schedule)
+        #
+        if cost > best_cost:
+            best_cost = cost
+            best_schedule = sequence
+            print("{} -> cost: {}".format(i+1, cost))
+
+    print("Best schedule is {} while best cost is {}.".format(best_schedule, best_cost))

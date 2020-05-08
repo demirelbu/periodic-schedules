@@ -21,7 +21,6 @@ class MCTSNode(object):
 # tag::mcts-add-child[]
     def add_random_child(self):
         index: int = random.randint(0, len(self.unvisited_moves) - 1)
-        # index: int = 0
         new_move: List[int] = self.unvisited_moves.pop(index)
         new_game_state: Schedule = self.game_state.allocate(new_move)
         new_node: MCTSNode = MCTSNode(new_game_state, self, new_move)
@@ -51,38 +50,26 @@ class MCTSAgent:
     def __init__(self, num_rounds, temperature):
         self.num_rounds = num_rounds
         self.temperature = temperature
-        self.k = 0
+
 
 # tag::mcts-signature[]
     def select_move(self, game_state: Schedule):
-        print('Start!')
         root: MCTSNode = MCTSNode(game_state)
-        print(root.game_state.sequence)
-# end::mcts-signature[]
 
 # tag::mcts-rounds[]
         for _ in range(self.num_rounds):
             node: MCTSNode = root
-            self.k += 1
-
-            print("============= {} =============".format(self.k))
 
             while (not node.can_add_child()) and (not node.is_terminal()):
                 node: MCTSNode = self.select_child(node)
-                print("State: {}, Reward: {:3.2f}, Number of Times: {}".format(
-                    node.game_state.sequence, node.win_counts, node.num_rollouts))
 
             # Add a new child node into the tree.
             if node.can_add_child():
                 node: MCTSNode = node.add_random_child()
-                print("populate:")
-                print("State: {}, Reward: {:3.2f}, Number of Times: {}".format(
-                    node.game_state.sequence, node.win_counts, node.num_rollouts))
-
-            print("==============================")
 
             # Simulate a random game from this node.
             reward: float = self.simulate_random_game(node.game_state)
+            sequence = node.game_state
 
             # Propagate scores back up the tree.
             while node is not None:
@@ -90,29 +77,7 @@ class MCTSAgent:
                 node = node.parent
 # end::mcts-rounds[]
 
-        scored_moves = [
-            (child.winning_frac(),
-             child.move, child.num_rollouts)
-            for child in root.children
-        ]
-        scored_moves.sort(key=lambda x: x[0], reverse=True)
-        for s, m, n in scored_moves[:10]:
-            print('%s - %.3f (%d)' % (m, s, n))
-
-
-# tag::mcts-selection[]
-        # Having performed as many MCTS rounds as we have time for, we
-        # now pick a move.
-        best_move = None
-        best_pct = -100000.0
-        for child in root.children:
-            child_pct = child.winning_frac()
-            if child_pct > best_pct:
-                best_pct = child_pct
-                best_move = child.move
-        print('Select move %s with win pct %.3f' % (best_move, best_pct))
-        return best_move
-# end::mcts-selection[]
+        return reward, sequence
 
 # tag::mcts-uct[]
     def select_child(self, node):
@@ -145,4 +110,3 @@ class MCTSAgent:
             new_schedule = new_schedule.allocate(random.randint(1, 3))
         reward: float = -1 * new_schedule.evaluate()
         return reward
-
