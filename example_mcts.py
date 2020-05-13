@@ -50,6 +50,10 @@ variables['V3'] = np.matrix([[1.2732]])
 
 
 if __name__ == "__main__":
+    #
+    no_iter = 100
+    #
+    cost_vec = np.zeros(no_iter)
     # construct the cost function
     costfunc = costfunction(variables)
     # create an instant for schedule
@@ -57,14 +61,15 @@ if __name__ == "__main__":
     # ...
     best_cost = -100000.0
     best_schedule = None
-    for i in range(500):
-        bot = MCTSAgent(300, temperature=2.0)
+    for i in range(no_iter):
+        bot = MCTSAgent(1000, temperature=1.4)
         #
         cost, sequence = bot.select_move(schedule)
         #
+        cost_vec[i] = cost
         if cost > best_cost:
             best_cost = cost
             best_schedule = sequence
             print("{} -> cost: {}".format(i+1, cost))
-
     print("Best schedule is {} while best cost is {}.".format(best_schedule, best_cost))
+    print(np.mean(cost_vec))
