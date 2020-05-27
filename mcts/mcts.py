@@ -55,11 +55,14 @@ class MCTSAgent:
 # tag::mcts-signature[]
     def select_move(self, game_state: Schedule):
         root: MCTSNode = MCTSNode(game_state)
+        best_value: float = -1.0
+        best_sequence = None
 
 # tag::mcts-rounds[]
         for _ in range(self.num_rounds):
             node: MCTSNode = root
 
+            # Select a leaf node that is unxplored or terminal.
             while (not node.can_add_child()) and (not node.is_terminal()):
                 node: MCTSNode = self.select_child(node)
 
@@ -70,6 +73,7 @@ class MCTSAgent:
             # Simulate a random game from this node.
             reward: float = self.simulate_random_game(node.game_state)
             sequence = node.game_state
+            print(sequence.schedule)
 
             # Propagate scores back up the tree.
             while node is not None:
@@ -77,7 +81,13 @@ class MCTSAgent:
                 node = node.parent
 # end::mcts-rounds[]
 
-        return reward, sequence
+            # Check if this is the largest we have seen so far.
+            if sequence.is_over() and (reward > best_value):
+                best_value: float = reward
+                best_sequence = deepcopy(sequence)
+        return best_sequence.evaluate(), best_sequence.schedule
+
+#        return reward, sequence
 
 # tag::mcts-uct[]
     def select_child(self, node):
@@ -108,5 +118,5 @@ class MCTSAgent:
         new_schedule = deepcopy(schedule)
         while not new_schedule.is_over():
             new_schedule = new_schedule.allocate(random.randint(1, 3))
-        reward: float = -1 * new_schedule.evaluate()
+        reward: float = new_schedule.normalize(new_schedule.evaluate(), 5000)
         return reward
