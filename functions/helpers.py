@@ -4,14 +4,7 @@ from itertools import combinations
 
 
 def find_all_allocation_options(nUsers: int, nChannels: int) -> Dict:
-    """
-    Arguments:
-        nUsers      the number of users (or plants)
-        nChannels   the number of channels
-
-    Output:
-        All possible user allocations for the different number of user and channel combinations
-    """
+    "This function finds all possible user allocations for the different number of user and channel combinations."
     all_user_allocations = list(combinations([index for index in range(1, nUsers + 1)], nChannels))
     return {index: users for index, users in enumerate(all_user_allocations)}
 

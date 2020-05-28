@@ -61,7 +61,7 @@ class MCTSAgent:
             # Simulate a random game from this node.
             value: float = self.simulate_random_game(node.state)
             sequence: Schedule = node.state
-#            print(sequence.schedule)
+            print(sequence.schedule)
 
             # Propagate scores back up the tree.
             while node is not None:
