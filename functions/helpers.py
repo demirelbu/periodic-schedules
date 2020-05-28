@@ -1,4 +1,3 @@
-import numpy as np
 from typing import Dict, List
 from itertools import combinations
 
@@ -34,7 +33,7 @@ def index2schedule(indices: List[int], nUsers: int, nChannels: int) -> List[int]
 
 
 def create_complete_search_tree(cardinality: int, period: int) -> List[int]:
-    "This function create a complete search tree."
+    "This function creates a complete search tree."
     schedules = [[0] * period for i in range(cardinality ** period)]
     for j in range(period):
         k: int = 0
