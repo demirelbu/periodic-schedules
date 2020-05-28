@@ -1,11 +1,12 @@
 import numpy as np
-from typing import Tuple, Dict
+from typing import Tuple, Dict, List
 from scipy import linalg as LA
 from .helpers import linearsearch
 
+
 """
 This code is for computing the infinite-horizon control cost (or loss) when periodically
-allocating a single communication channel to multiple feedback control systems.
+allocating multiple communication channels to multiple feedback control systems.
 """
 
 
@@ -13,6 +14,7 @@ class costfunction:
     def __init__(self, variables: Dict, maxvalue: float = 5000.0) -> None:
         #
         self.no_plants: int = variables['no_plants']
+        self.no_channels: int = variables['no_channels']
         self.variables: Dict = variables
         self.maxvalue: float = maxvalue
         for ind_plant in range(1, self.no_plants + 1):
@@ -53,7 +55,7 @@ class costfunction:
             # update the noise's dictionary
             self.variables['N' + str(ind_plant)] = N
 
-    def __call__(self, schedule: np.ndarray) -> float:
+    def __call__(self, schedule: List[int]) -> float:
         cost: float = 0.0
         for plant_index in range(1, self.no_plants + 1):
             # unpack system variables
@@ -64,11 +66,11 @@ class costfunction:
             F = self.variables['F' + str(plant_index)]
             M = self.variables['M' + str(plant_index)]
             # compute "elapsed time" sequence for a given plant
-            time, flag = linearsearch(schedule, plant_index)
+            time, flag = linearsearch(schedule, plant_index, self.no_plants, self.no_channels)
             # find the length of the schedule
             period: float = len(time)
             if flag is False:
-                return self.maxvalue  # np.Inf  # Or a large number
+                return self.maxvalue
             largest_time: int = max(time)
             _variables: Dict = {}
             _variables['Z0'] = np.zeros(N.shape)

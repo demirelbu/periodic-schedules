@@ -1,15 +1,18 @@
+import random
 import numpy as np
 from typing import Dict
-from functions import *
+from functions import costfunction
+from models import Schedule
+from mcts import MCTSAgent
 
 
 def systems():
     # create a python dictionary
     variables: Dict = {}
     # number of systems
-    variables['no_plants']: int = 3
+    variables['no_plants']: int = 5
     # number of channels
-    variables['no_channels']: int = 1
+    variables['no_channels']: int = 2
     # System 1
     variables['A1'] = np.matrix([[0.8114, 0.3277], [0.4478, 0.8819]])
     variables['B1'] = np.matrix([[0.6651], [0.8834]])
@@ -48,30 +51,51 @@ def systems():
         [[0.6642, -0.1361], [-0.1361, 0.2247]])
     # covariance of measurement noise
     variables['V3'] = np.matrix([[1.2732]])
+    # System 4
+    variables['A4'] = np.matrix([[0.9231, 0.2357], [0.6234, 0.1020]])
+    variables['B4'] = np.matrix([[0.1236], [0.4864]])
+    variables['C4'] = np.matrix([[0.2137, 0.4623]])
+    variables['Q4'] = np.matrix(
+        [[1.7395, 0.5339], [0.5339, 2.4417]])                   # state cost
+    # control cost
+    variables['R4'] = np.matrix([[0.8543]])
+    # covariance of process noise
+    variables['W4'] = np.matrix([[1.5225, 0.3215], [0.3215, 0.9335]])
+    # covariance of measurement noise
+    variables['V4'] = np.matrix([[0.4325]])
+    # System 5
+    variables['A5'] = np.matrix([[0.3926, 0.0125], [1.0375, 1.3194]])
+    variables['B5'] = np.matrix([[0.6147], [0.8327]])
+    variables['C5'] = np.matrix([[1.2945, 0.6459]])
+    variables['Q5'] = np.matrix(
+        [[2.3610, 0.8236], [0.8236, 1.7546]])                   # state cost
+    variables['R5'] = np.matrix(
+        [[3.1228]])                                             # control cost
+    # covariance of process noise
+    variables['W5'] = np.matrix(
+        [[1.002, 0.6723], [0.6723, 2.2877]])
+    # covariance of measurement noise
+    variables['V5'] = np.matrix([[0.3249]])
     return variables
 
 
 if __name__ == "__main__":
+    # Set the random seeds for reproducibility
+    random.seed(50)
     # Create a set of feedback control systems
     variables = systems()
     # Construct a cost function
     costfunc = costfunction(variables)
-    # Find the all allocation options
-    all_scheduling_options = find_all_allocation_options(
-        variables['no_plants'], variables['no_channels'])
-    # Compute the cardinality of the sequence of the all possible allocation
-    cardinality = len(all_scheduling_options)
-    for period in range(3, 13):  # period length
-        # Create a complete search tree (that includes only indices)
-        sequences = create_complete_search_tree(cardinality, period)
-        # Create a list to gather the costs associated with schedules
-        cost_list = []
-        # Compute the costs associated with schedules
-        for sequence in sequences:
-            cost_list.append(costfunc(sequence))
-        # Print the period, the lowest cost, the corresponding schedule
-        print("Period: {}, Min cost: {:3.4f}, Sequence: {}.".format(period,
-                                                                    min(cost_list),
-                                                                    index2schedule(sequences[cost_list.index(min(cost_list))],
-                                                                                   variables['no_plants'],
-                                                                                   variables['no_channels'])))
+    # Create an instant for schedule
+    schedule = Schedule(
+        [],
+        costfunc,
+        9,
+        variables['no_plants'],
+        variables['no_channels'])
+    # Create a scheduling bot
+    bot = MCTSAgent(500000, temperature=1.2)
+    # Search for the near-optimal schedule
+    cost, sequence = bot.select_action(schedule)
+    # Print the near-optimal schedule and the associated cost
+    print("The near-optimal sequence is {} and its associated cost is {:3.4f}.".format(sequence, cost))
