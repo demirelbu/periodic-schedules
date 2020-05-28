@@ -1,32 +1,56 @@
 from copy import deepcopy
 from typing import List, Callable
+from itertools import combinations
 
 
-# tag::schedule[]
 class Schedule:
     def __init__(self, sequence: List[int], func: Callable[[
-                 List[int]], float], period: int, no_users: int) -> None:
+                 List[int]], float], period: int, nUsers: int, nChannels: int) -> None:
         self.period: int = period
-        self.no_users: int = no_users
+        self.nUsers: int = nUsers
+        self.nChannels: int = nChannels
+        self._sequence: List[int] = sequence
         self.func: Callable[[List[int]], float] = func
-        self.sequence: List[int] = sequence
 
-    def legal_choices(self) -> List[int]:
-        if self.is_over():
+    @property
+    def allocation_options(self) -> List[int]:
+        return list(combinations(
+            [index for index in range(1, self.nUsers + 1)], self.nChannels))
+
+    @property
+    def allocation_options_masked(self) -> List[int]:
+        if self.is_maximum_cardinality_reached:
             return []
-        return [i for i in range(1, self.no_users + 1)]
+        else:
+            return [index for index in range(len(self.allocation_options))]
 
     def allocate(self, user: int) -> object:
-        new_sequence = deepcopy(self.sequence)
+        new_sequence = deepcopy(self._sequence)
         new_sequence.append(user)
-        return Schedule(new_sequence, self.func, self.period, self.no_users)
+        return Schedule(new_sequence, self.func, self.period,
+                        self.nUsers, self.nChannels)
 
+    @property
     def evaluate(self) -> float:
-        return self.func(self.sequence)
+        return self.func(self._sequence)
 
-    def is_over(self) -> bool:  # is_completed
-        return len(self.sequence) >= self.period
+    @staticmethod
+    def normalize(value: float, max_value: float = 5000.0) -> float:
+        if value > max_value:
+            return 0.0
+        else:
+            return 1 - value / max_value
 
-    def __str__(self) -> str:  # needed to be updated
-        return f"The schedule is {self.sequence} that is {self.is_over()}."
-# end::schedule[]
+    @property
+    def schedule(self) -> List[int]:
+        all_user_allocations = {
+            index: users for index,
+            users in enumerate(self.allocation_options)}
+        return [all_user_allocations[index] for index in self._sequence]
+
+    @property
+    def is_maximum_cardinality_reached(self) -> bool:
+        return len(self._sequence) >= self.period
+
+    def __str__(self) -> str:
+        return f"For the communication sequence of {self.schedule}, the control cost is computed as {self.evaluate}."
