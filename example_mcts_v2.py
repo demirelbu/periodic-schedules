@@ -94,7 +94,7 @@ if __name__ == "__main__":
         variables['no_plants'],
         variables['no_channels'])
     # Create a scheduling bot
-    bot = MCTSAgent(500000, temperature=1.2)
+    bot = MCTSAgent(1250000, temperature=1.2)
     # Search for the near-optimal schedule
     cost, sequence = bot.select_action(schedule)
     # Print the near-optimal schedule and the associated cost
