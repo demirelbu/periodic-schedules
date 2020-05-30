@@ -35,7 +35,7 @@ class Schedule:
         return self.func(self._sequence)
 
     @staticmethod
-    def normalize(value: float, max_value: float = 5000.0) -> float:
+    def normalize(value: float, max_value: float = 10000.0) -> float:
         if value > max_value:
             return 0.0
         else:
