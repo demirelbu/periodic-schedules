@@ -1,5 +1,4 @@
 import random
-from typing import Dict
 from functions import costfunction
 from models import Schedule, systems
 from mcts import MCTSAgent
@@ -9,7 +8,7 @@ if __name__ == "__main__":
     # Set the random seeds for reproducibility
     random.seed(40)
     # Create a set of feedback control systems
-    variables = systems(2, 1, 1, 3, 1)
+    variables = systems(2, 1, 1, 3, 1, 20)
     # Construct a cost function
     costfunc = costfunction(variables)
     # Create an instant for schedule
