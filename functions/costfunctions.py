@@ -11,7 +11,7 @@ allocating multiple communication channels to multiple feedback control systems.
 
 
 class costfunction:
-    def __init__(self, variables: Dict, maxvalue: float = 10000.0) -> None:
+    def __init__(self, variables: Dict, maxvalue: float = 25000.0) -> None:
         #
         self.no_plants: int = variables['no_plants']
         self.no_channels: int = variables['no_channels']
