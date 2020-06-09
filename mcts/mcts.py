@@ -18,8 +18,8 @@ class MCTSNode(object):
     def add_random_child(self):
         index: int = random.randint(0, len(self.unvisited_actions) - 1)
         new_action: List[int] = self.unvisited_actions.pop(index)
-        new_game_state: Schedule = self.state.allocate(new_action)
-        new_node: MCTSNode = MCTSNode(new_game_state, self, new_action)
+        new_state: Schedule = self.state.allocate(new_action)
+        new_node: MCTSNode = MCTSNode(new_state, self, new_action)
         self.children.append(new_node)
         return new_node
 
@@ -59,7 +59,7 @@ class MCTSAgent:
                 node: MCTSNode = node.add_random_child()
 
             # Simulate a random game from this node.
-            value: float = self.simulate_random_game(node.state)
+            value: float = self.simulate_random_rollout(node.state)
             sequence: Schedule = node.state
             print(sequence.schedule)
 
@@ -101,7 +101,7 @@ class MCTSAgent:
         return best_child
 
     @staticmethod
-    def simulate_random_game(schedule: Schedule) -> float:
+    def simulate_random_rollout(schedule: Schedule) -> float:
         new_schedule: Schedule = deepcopy(schedule)
         while not new_schedule.is_maximum_cardinality_reached:
             new_schedule: Schedule = new_schedule.allocate(
