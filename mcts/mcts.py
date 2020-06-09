@@ -2,6 +2,7 @@ import math
 import random
 from copy import deepcopy
 from typing import Dict, List, Callable
+from tqdm import tqdm
 from models import Schedule
 
 
@@ -47,7 +48,7 @@ class MCTSAgent:
         best_value: float = -1.0
         best_sequence = None
 
-        for _ in range(self.num_rounds):
+        for _ in tqdm(range(self.num_rounds), desc="MCTS Progress"):
             node: MCTSNode = root
 
             # Select a leaf node that is unxplored or terminal.
@@ -61,7 +62,6 @@ class MCTSAgent:
             # Simulate a random game from this node.
             value: float = self.simulate_random_rollout(node.state)
             sequence: Schedule = node.state
-            print(sequence.schedule)
 
             # Propagate scores back up the tree.
             while node is not None:
