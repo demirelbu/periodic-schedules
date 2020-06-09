@@ -59,7 +59,7 @@ class MCTSAgent:
             if node.can_add_child():
                 node: MCTSNode = node.add_random_child()
 
-            # Simulate a random game from this node.
+            # Simulate a random rollout from this node.
             value: float = self.simulate_random_rollout(node.state)
             sequence: Schedule = node.state
 
