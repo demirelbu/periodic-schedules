@@ -14,4 +14,4 @@ The **offline** optimization of communication sequences (for a given collection 
 python3 example_mcts.py
 ```
 
-The entire paper can be download from https://arxiv.org/
+The entire paper can be downloaded from https://arxiv.org/.
