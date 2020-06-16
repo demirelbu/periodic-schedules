@@ -1,2 +1,2 @@
-numpy
-tqdm
+numpy==1.15.3
+tqdm==4.46.1
