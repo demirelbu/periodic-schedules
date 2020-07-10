@@ -14,21 +14,21 @@ This code was tested on **Python 3.7.6**. To install the required python pakages
 pip3 install -r requirements.txt
 ```
 
-### Results
+### Numerical results
 
-The **optimal** communication sequence (for a given collection of linear feedback control systems) can be obtained, via **exhaustive search**, by running:
+For a collection of three unstable subsystems that communicates over a single channels (by using `systems(n=2,m=1,p=1,N=3,M=1,seed=20)`), the optimal communication sequence  can be obtained, via **exhaustive search**, by running:
 
 ```python
 python3 example_exhaustive_search.py
 ```
 
-The **offline** optimization of communication sequences (for a given collection of linear feedback control systems) can be done, via **MCTS**, by running:
+For a collection of three unstable subsystems that communicates over a single channels (by using `systems(n=2,m=1,p=1,N=3,M=1,seed=20)`), the **offline** optimization of communication sequences can be done, via **MCTS**, by running:
 
 ```python
 python3 example_mcts.py
 ```
 
-**Optimal periodic schedules** for three feedback loops while sharing a single channel can be obtained as
+Optimal periodic schedules for three feedback loops while sharing a single channel can be obtained as shown in the figure below.
 
 | Period | Periodic sequence       | Total loss  |
 | ------ | ----------------------- | ----------- |
@@ -41,3 +41,9 @@ python3 example_mcts.py
 | 10     | 2,1,2,1,3,1,2,1,3,1     | 385.6078    |
 | 11     | 2,1,1,2,1,3,1,2,1,3,1   | 382.4858    |
 | 12     | 2,1,2,1,3,1,2,1,2,1,3,1 | 385.3658    |
+
+For a group of five unstable subsystems that communicates over a network with two channels (by using `systems(n=4,m=3,p=2,N=5,M=2,seed=65)`), the **offline** optimization of communication sequences can be done, via **MCTS**, by running:
+
+```python
+python3 example_mcts_v2.py
+```
