@@ -8,7 +8,7 @@ We here consider a networked control system that consists of `N` independent lin
 
 ### Requirements
 
-This code was tested on Python 3.7.6. To install the required python pakages, please run:
+This code was tested on **Python 3.7.6**. To install the required python pakages, please run:
 
 ```python
 pip3 install -r requirements.txt
@@ -27,3 +27,17 @@ The **offline** optimization of communication sequences (for a given collection 
 ```python
 python3 example_mcts.py
 ```
+
+**Optimal periodic schedules** for three feedback loops while sharing a single channel can be obtained as
+
+| Period | Periodic sequence       | Total loss  |
+| ------ | ----------------------- | ----------- |
+| 3      | 2,3,1                   | 576.2013    |
+| 4      | 2,1,3,1                 | 385.9708    |
+| 5      | 2,1,3,1,1               | 399.8308    |
+| 6      | 2,1,2,1,3,1             | 385.3658    |
+| 7      | 2,1,3,1,2,1,1           | 380.4990    |
+| 9      | 2,1,2,1,3,1,2,1,1       | 390.7592    |
+| 10     | 2,1,2,1,3,1,2,1,3,1     | 385.6078    |
+| 11     | 2,1,1,2,1,3,1,2,1,3,1   | 382.4858    |
+| 12     | 2,1,2,1,3,1,2,1,2,1,3,1 | 385.3658    |
