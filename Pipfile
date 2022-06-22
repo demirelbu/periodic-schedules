@@ -8,7 +8,7 @@ pylint = "~=2.5"
 autopep8 = "~=1.5"
 
 [packages]
-numpy = "~=1.19"
+numpy = "~=1.22"
 tqdm = "==4.46.1"
 scipy = "~=1.5"
 
